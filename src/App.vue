@@ -29,6 +29,14 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
 })
+
+// Data sosmed dibuat reaktif menggunakan ref (Vue 3 Composition API)
+const sosmedList = ref([
+  { name: 'IG', url: 'https://instagram.com/swanwira', class: 'ig' },
+  { name: 'WA', url: 'https://wa.me/089528633287', class: 'wa' },
+  { name: 'TT', url: 'https://tiktok.com/@prmwira2', class: 'tt' }
+])
+
 </script>
 
 <template>
@@ -83,6 +91,25 @@ onUnmounted(() => {
       </router-view>
     </main>
   </div>  
+
+<div id="app">
+    <div class="sticky-sosmed">
+      <a 
+        v-for="sosmed in sosmedList" 
+        :key="sosmed.name"
+        :href="sosmed.url" 
+        target="_blank" 
+        :class="['sosmed-btn', sosmed.class]"
+      >
+        {{ sosmed.name }}
+      </a>
+    </div>
+
+    <footer class="sticky-footer">
+      <p>&copy; 2026 Pramudya. Mention In Social Media Please.</p>
+    </footer>
+  </div>
+
 </template>
 
 <style>
@@ -358,4 +385,62 @@ h1 a {
   50% { transform: translate(100px, 60px) scale(1.15) rotate(60deg); }
   100% { transform: translate(-50px, 120px) scale(0.9) rotate(120deg); }
 }
+
+/* Mengatur ruang di bawah body agar konten tidak tertutup footer */
+#app {
+  font-family: Arial, sans-serif;
+  /* padding-bottom: 0px; /* Sesuaikan dengan tinggi footer */
+}
+
+.placeholder-content {
+  padding: 20px;
+  height: 150vh; /* Hanya tiruan agar halaman bisa di-scroll */
+}
+
+/* --- STYLE UNTUK SOSIAL MEDIA --- */
+.sticky-sosmed {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+}
+
+.sosmed-btn {
+  padding: 15px;
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 2px;
+  transition: 0.3s ease;
+  border-radius: 5px 0 0 5px;
+}
+
+.sosmed-btn:hover {
+  background: rgb(183, 182, 184);
+  padding-right: 25px; /* Efek memanjang saat di-hover */
+}
+
+/* Warna masing-masing tombol */
+.ig { background-color: #a855f7; }
+.wa { background-color: #25D366; }
+.tt { background-color: #363636; }
+
+/* --- STYLE UNTUK FOOTER --- */
+.sticky-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #a855f7;
+  color: white;
+  text-align: center;
+  padding: 15px 0;
+  z-index: 1000;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+}
+
 </style>

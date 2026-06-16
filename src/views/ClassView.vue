@@ -1,7 +1,7 @@
 <template>
   <div class="class-container">
     <div class="header-section">
-      <h2>Data <span>My Friend</span> In Class</h2>
+      <h2>Daftar Nama <span>Teman Kelas</span></h2>
       <p class="badge">XI PPLG 2</p>
       <p class="badge">Total: {{ students.length }} Siswa</p>
     </div>

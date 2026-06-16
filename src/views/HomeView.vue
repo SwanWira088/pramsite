@@ -1,14 +1,14 @@
 <template>
   <div class="view-container">
     <div class="hero">
-      <h1 class="title">Sidang Laporan <span>PKL</span></h1>
-      <p class="subtitle">Presentasi Praktik Kerja Lapangan Tahun Ajaran 2025 / 2026</p>
+      <h1 class="title">Website Sidang Laporan <span>PKL</span></h1>
+      <p class="subtitle">Presentasi Praktik Kerja Lapangan Tahun Ajaran 2025 / 2026. <span>Milik Pramudya Wira Andhara</span></p>
       
       <div class="action-buttons">
     <router-link to="/report" class="btn btn-primary">Mulai Presentasi</router-link>
     
     <button class="btn btn-outline" @click="downloadLaporan">
-      <span class="icon">📥</span> Unduh Laporan Asli
+      <span class="icon">📥</span> Unduh Laporan
     </button>
   </div>
     </div>
@@ -52,6 +52,12 @@ const link = document.createElement('a');
   color: #a3a3a3;
   font-size: 1.2rem;
   margin-bottom: 2rem;
+}
+
+.subtitle span {
+  background: linear-gradient(to right, #9333ea, #db2777);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .action-buttons {
