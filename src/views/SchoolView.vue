@@ -1,68 +1,105 @@
 <template>
-  <div class="school-layout">
-    <div class="header-container">
-      <h2>Identitas <span>Sekolah</span></h2>
-      
-      <!-- INTERAKTIF & COLORFUL CUSTOM DROPDOWN -->
+  <div class="school-page">
+    <header class="school-head" v-reveal>
+      <div class="head-copy">
+        <span class="eyebrow">Jejak Pendidikan</span>
+        <h2>Identitas <span>Sekolah</span></h2>
+        <p>Dari SD sampai SMK — pilih jenjang untuk melihat detailnya.</p>
+      </div>
+
       <div class="custom-dropdown-wrapper">
-        <span class="dropdown-label">Pilih Jenjang:</span>
-        
+        <span class="dropdown-label">Pilih Jenjang</span>
+
         <div class="custom-dropdown">
-          <!-- Tombol Utama Dropdown -->
-          <button 
-            @click="toggleDropdown" 
+          <button
+            @click="toggleDropdown"
             class="dropdown-trigger"
             :class="{ 'is-active': isOpen }"
             :style="{ '--current-color': currentSchool.themeColor }"
+            aria-haspopup="listbox"
+            :aria-expanded="isOpen"
           >
-            <span class="badge" :style="{ backgroundColor: currentSchool.themeColor }">
+            <span class="badge" :style="{ backgroundColor: currentSchool.themeColor, color: currentSchool.onColor }">
               {{ currentSchool.level }}
             </span>
             <span class="school-name-text">{{ currentSchool.name }}</span>
-            <span class="chevron-icon" :class="{ 'rotate': isOpen }">▼</span>
+            <span class="chevron-icon" :class="{ rotate: isOpen }">▼</span>
           </button>
 
-          <!-- List Pilihan Menu (Muncul saat di-klik) -->
           <transition name="slide-fade">
-            <ul v-if="isOpen" class="dropdown-menu">
-              <li 
-                v-for="(school, index) in schoolData" 
+            <ul v-if="isOpen" class="dropdown-menu" role="listbox">
+              <li
+                v-for="(school, index) in schoolData"
                 :key="index"
                 @click="selectSchool(index)"
                 class="dropdown-item"
-                :class="{ 'selected': selectedSchoolIndex === index }"
+                :class="{ selected: selectedSchoolIndex === index }"
                 :style="{ '--hover-color': school.themeColor }"
+                role="option"
+                :aria-selected="selectedSchoolIndex === index"
               >
-                <span class="badge" :style="{ backgroundColor: school.themeColor }">
+                <span class="badge" :style="{ backgroundColor: school.themeColor, color: school.onColor }">
                   {{ school.level }}
                 </span>
                 {{ school.name }}
+                <span v-if="selectedSchoolIndex === index" class="item-check">✦</span>
               </li>
             </ul>
           </transition>
         </div>
       </div>
+    </header>
+
+    <div
+      class="content-grid"
+      :key="selectedSchoolIndex"
+      :style="{ '--school-color': currentSchool.themeColor }"
+      v-reveal="60"
+    >
+      <div class="content-top">
+        <span class="level-stamp" :style="{ backgroundColor: currentSchool.themeColor, color: currentSchool.onColor }">
+          {{ currentSchool.level }}
+        </span>
+        <h3>{{ currentSchool.name }}</h3>
+      </div>
+
+      <p class="school-desc">{{ currentSchool.deskripsi }}</p>
+
+      <ul class="detail-list">
+        <li>
+          <span class="detail-label">Alamat</span>
+          <span class="detail-value">{{ currentSchool.alamat }}</span>
+        </li>
+        <li>
+          <span class="detail-label">Kepala Sekolah</span>
+          <span class="detail-value">{{ currentSchool.kepsek }}</span>
+        </li>
+        <li>
+          <span class="detail-label">Pembimbing</span>
+          <span class="detail-value">{{ currentSchool.pembimbing }}</span>
+        </li>
+        <li>
+          <span class="detail-label">{{ currentSchool.fiturLabel }}</span>
+          <span class="detail-value" v-html="currentSchool.fiturValue"></span>
+        </li>
+      </ul>
+
+      <span class="content-spark" aria-hidden="true">✦</span>
     </div>
 
-    <!-- KONTEN DINAMIS DENGAN BORDER WARNA MENYESUAIKAN JENJANG -->
-    <div 
-      class="content-grid" 
-      :key="selectedSchoolIndex"
-      :style="{ borderLeftColor: currentSchool.themeColor }"
-    >
-      <div class="text-content">
-        <h3 :style="{ color: currentSchool.themeColor }">{{ currentSchool.name }}</h3>
-        <p>{{ currentSchool.deskripsi }}</p>
-        <ul>
-          <li><strong>Alamat:</strong> {{ currentSchool.alamat }}</li>
-          <li><strong>Kepala Sekolah:</strong> {{ currentSchool.kepsek }}</li>
-          <li><strong>Pembimbing:</strong> {{ currentSchool.pembimbing }}</li>
-          <li>
-            <strong>{{ currentSchool.fiturLabel }}:</strong> 
-            <span v-html="currentSchool.fiturValue"></span>
-          </li>
-        </ul>
-      </div>
+    <div class="journey" v-reveal="120">
+      <span class="journey-label">Langsung lompat ke:</span>
+      <button
+        v-for="(school, index) in schoolData"
+        :key="school.level"
+        class="journey-step"
+        :class="{ active: selectedSchoolIndex === index }"
+        :style="{ '--step-color': school.themeColor, '--step-on': school.onColor }"
+        @click="selectSchool(index)"
+      >
+        <span class="step-dot"></span>
+        {{ school.level }}
+      </button>
     </div>
   </div>
 </template>
@@ -82,232 +119,419 @@ const selectSchool = (index) => {
   isOpen.value = false
 }
 
-// Data sekolah ditambah properti 'themeColor' untuk kustomisasi warna neon
 const schoolData = ref([
   {
     level: 'SMK',
     name: 'SMK Yadika Soreang',
-    themeColor: '#a855f7', // Ungu
-    deskripsi: 'Laporan ini disusun sebagai salah satu syarat ketuntasan Praktik Kerja Lapangan (PKL) pada program keahlian yang ditekuni.',
-    alamat: 'Jl. Bojongkoneng, Kp. Karang Anyar, RT 04/05, Cingcin, Kec. Soreang, Kabupaten Bandung, Jawa Barat.',
+    themeColor: '#17233d',
+    onColor: '#fff5ee',
+    deskripsi:
+      'Sekolah tempat saya menempuh pendidikan kejuruan dan belajar lebih dalam tentang pengembangan perangkat lunak. Laporan ini disusun sebagai salah satu syarat ketuntasan Praktik Kerja Lapangan (PKL).',
+    alamat:
+      'Jl. Bojongkoneng, Kp. Karang Anyar, RT 04/05, Cingcin, Kec. Soreang, Kabupaten Bandung, Jawa Barat.',
     kepsek: 'Ibu Yeti Nuraeni',
     pembimbing: '...',
     fiturLabel: 'Jurusan',
-    fiturValue: ' Perhotelan, <i><b>PPLG</b></i>, Akutansi'
+    fiturValue: 'Perhotelan, <i><b>PPLG</b></i>, Akuntansi',
   },
   {
     level: 'SMP',
     name: 'SMPN 1 Cangkuang',
-    themeColor: '#3b82f6', // Biru
-    deskripsi: 'Membentuk karakter siswa yang unggul, berprestasi, dan siap melanjutkan ke jenjang pendidikan yang lebih tinggi.',
-    alamat: 'Jl. Tenjolaya. RT06/RW07. Dusun Ciluncat. Desa Ciluncat Kec. Cangkuang Kab. Bandung.',
+    themeColor: '#e98275',
+    onColor: '#17233d',
+    deskripsi:
+      'Membentuk karakter siswa yang unggul, berprestasi, dan siap melanjutkan ke jenjang pendidikan yang lebih tinggi.',
+    alamat:
+      'Jl. Tenjolaya RT 06/RW 07, Dusun Ciluncat, Desa Ciluncat, Kec. Cangkuang, Kab. Bandung.',
     kepsek: 'Bu Nenden Surtini',
-    pembimbing: 'Wakel Kelas 7, 8, 9',
+    pembimbing: 'Wali Kelas 7, 8, 9',
     fiturLabel: 'Ekstrakurikuler',
-    fiturValue: ' Pramuka, Paskibra, PMR, Futsal, Voli, Taekwondo, '
+    fiturValue: 'Pramuka, Paskibra, PMR, Futsal, Voli, Taekwondo',
   },
   {
     level: 'SD',
     name: 'SDN 2 Soreang',
-    themeColor: '#FF0000', // Hijau Emerald
-    deskripsi: 'Menanamkan fondasi karakter dasar, kreativitas, dan ilmu pengetahuan sejak usia dini dengan lingkungan belajar yang menyenangkan.',
-    alamat: 'Jl. Terusan Cipatik No.44, Desa Pamekaran, Kecamatan Soreang, Kabupaten Bandung.',
+    themeColor: '#f8aba0',
+    onColor: '#17233d',
+    deskripsi:
+      'Menanamkan fondasi karakter dasar, kreativitas, dan ilmu pengetahuan sejak usia dini dengan lingkungan belajar yang menyenangkan.',
+    alamat:
+      'Jl. Terusan Cipatik No.44, Desa Pamekaran, Kecamatan Soreang, Kabupaten Bandung.',
     kepsek: 'Bu Teti Roswati',
-    pembimbing: 'Wakel 1, 2, 3, 4, 5, 6',
+    pembimbing: 'Wali Kelas 1, 2, 3, 4, 5, 6',
     fiturLabel: 'Akreditasi',
-    fiturValue: 'A (Sangat Baik)'
-  }
+    fiturValue: 'A (Sangat Baik)',
+  },
 ])
 
 const currentSchool = computed(() => schoolData.value[selectedSchoolIndex.value])
 
-// Fungsi untuk menutup dropdown ketika user klik di luar area dropdown
 const closeDropdownOutside = (e) => {
   if (!e.target.closest('.custom-dropdown')) {
     isOpen.value = false
   }
 }
+
 onMounted(() => window.addEventListener('click', closeDropdownOutside))
 onUnmounted(() => window.removeEventListener('click', closeDropdownOutside))
 </script>
 
 <style scoped>
-.school-layout {
-  max-width: 800px;
+.school-page {
+  max-width: 900px;
   margin: 0 auto;
-  color: #fff;
 }
 
-.header-container {
+.school-head {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2.5rem;
+  align-items: flex-end;
+  gap: 24px;
   flex-wrap: wrap;
-  gap: 20px;
+  margin-bottom: 28px;
 }
 
-h2 {
-  font-size: 2.5rem;
+.head-copy h2 {
+  margin: 16px 0 8px;
+  font-size: clamp(2rem, 5vw, 2.9rem);
+}
+
+.head-copy h2 span {
+  color: var(--pink-deep);
+}
+
+.head-copy p {
   margin: 0;
+  color: var(--muted);
+  font-size: 0.94rem;
 }
 
-h2 span {
-  color: var(--accent-purple, #a855f7);
-}
-
-/* --- STYLE INTERAKTIF CUSTOM DROPDOWN --- */
+/* ============ DROPDOWN ============ */
 .custom-dropdown-wrapper {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
 }
 
 .dropdown-label {
-  color: #a3a3a3;
-  font-size: 0.95rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pink-deep);
 }
 
 .custom-dropdown {
   position: relative;
-  width: 260px;
+  width: 270px;
 }
 
 .dropdown-trigger {
   width: 100%;
-  background: #171717;
-  color: white;
-  border: 2px solid #262626;
-  padding: 10px 16px;
-  border-radius: 12px;
-  font-size: 0.95rem;
   display: flex;
   align-items: center;
+  padding: 11px 15px;
+  border-radius: 999px;
+  border: 2px solid var(--navy);
+  background: var(--white);
+  color: var(--navy);
+  font-family: var(--font-body);
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: 3px 3px 0 var(--navy);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
 }
 
-/* Efek Glow & Border mengikuti warna sekolah saat aktif/hover */
-.dropdown-trigger:hover, .dropdown-trigger.is-active {
-  border-color: var(--current-color);
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.05), 0 0 10px var(--current-color);
+.dropdown-trigger:hover,
+.dropdown-trigger.is-active {
+  transform: translateY(-2px);
+  box-shadow: 5px 5px 0 var(--current-color);
+  background: var(--seashell);
 }
 
 .school-name-text {
-  flex-grow: 1;
+  flex: 1;
   text-align: left;
-  font-weight: 500;
+  font-size: 0.86rem;
+  font-weight: 700;
 }
 
 .badge {
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: bold;
-  color: white;
+  padding: 3px 9px;
   margin-right: 10px;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  border-radius: 999px;
+  border: 1.5px solid var(--navy);
+  font-size: 0.64rem;
+  font-weight: 800;
+  color: var(--navy);
+  background: var(--pink);
+}
+
+.dropdown-trigger .badge {
+  color: var(--seashell);
 }
 
 .chevron-icon {
-  font-size: 0.75rem;
-  color: #737373;
+  font-size: 0.62rem;
+  color: var(--muted);
   transition: transform 0.3s ease;
 }
 
 .chevron-icon.rotate {
   transform: rotate(180deg);
-  color: #fff;
+  color: var(--navy);
 }
 
-/* Menu List Dropdown */
 .dropdown-menu {
   position: absolute;
-  top: 115%;
+  top: calc(100% + 10px);
   left: 0;
   width: 100%;
-  background: #171717;
-  border: 1px solid #262626;
-  border-radius: 12px;
-  padding: 6px;
-  list-style: none;
   margin: 0;
+  padding: 7px;
+  list-style: none;
+  background: var(--white);
+  border: 2px solid var(--navy);
+  border-radius: 18px;
+  box-shadow: 5px 6px 0 var(--navy);
   z-index: 50;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(8px);
+  overflow: hidden;
 }
 
 .dropdown-item {
-  padding: 10px 12px;
-  border-radius: 8px;
-  cursor: pointer;
   display: flex;
   align-items: center;
-  font-size: 0.95rem;
-  transition: all 0.2s ease;
-  color: #d4d4d4;
+  padding: 10px 12px;
+  border-radius: 12px;
+  color: var(--navy);
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease, padding 0.2s ease;
 }
 
-/* Hover Item mengikuti warna masing-masing jenjang */
 .dropdown-item:hover {
-  background: rgba(255, 255, 255, 0.03);
-  color: #fff;
-  padding-left: 18px; /* Efek bergeser sedikit */
-  border-left: 3px solid var(--hover-color);
+  background: var(--pink-soft);
+  transform: translateX(4px);
 }
 
 .dropdown-item.selected {
-  background: rgba(255, 255, 255, 0.05);
-  color: white;
-  font-weight: bold;
+  background: var(--seashell);
+  font-weight: 800;
 }
 
-/* --- BOX KONTEN UTAMA --- */
-.content-grid {
-  background: var(--bg-card, #171717);
-  padding: 2rem;
-  border-radius: 16px;
-  border: 1px solid #262626;
-  border-left: 5px solid #a855f7; /* Default warna, di-override dinamis lewat inline style */
-  transition: border-left-color 0.5s ease;
-  animation: fadeIn 0.4s ease-out;
+.dropdown-item .badge {
+  color: var(--seashell);
 }
 
-.text-content h3 {
-  font-size: 1.8rem;
-  margin-top: 0;
-  transition: color 0.5s ease;
+.item-check {
+  margin-left: auto;
+  color: var(--pink-deep);
+  font-size: 0.7rem;
 }
 
-.text-content ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-.text-content li {
-  margin-bottom: 10px;
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.02);
-}
-
-/* --- ANIMASI TRANSISI --- */
 .slide-fade-enter-active {
-  transition: all 0.3s ease-out;
+  transition: opacity 0.24s ease, transform 0.24s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
+
 .slide-fade-leave-active {
-  transition: all 0.2s cubic-bezier(1, 0.5, 0.8, 1);
+  transition: opacity 0.16s ease, transform 0.16s ease;
 }
+
 .slide-fade-enter-from,
 .slide-fade-leave-to {
-  transform: translateY(-10px);
   opacity: 0;
+  transform: translateY(-10px) scale(0.98);
+}
+
+/* ============ CONTENT ============ */
+.content-grid {
+  position: relative;
+  padding: clamp(24px, 4vw, 38px);
+  background: var(--white);
+  border: 2px solid var(--navy);
+  border-left: 10px solid var(--school-color);
+  border-radius: 26px;
+  box-shadow: 7px 7px 0 var(--navy);
+  animation: fadeIn 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  overflow: hidden;
+}
+
+.content-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.level-stamp {
+  display: inline-grid;
+  place-items: center;
+  min-width: 54px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 2px solid var(--navy);
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--seashell);
+}
+
+.content-top h3 {
+  margin: 0;
+  font-size: clamp(1.4rem, 3.4vw, 1.9rem);
+}
+
+.school-desc {
+  margin: 16px 0 22px;
+  max-width: 62ch;
+  color: var(--muted);
+  font-size: 0.94rem;
+  line-height: 1.75;
+}
+
+.detail-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.detail-list li {
+  padding: 13px 15px;
+  border-radius: 14px;
+  background: var(--seashell);
+  border: 1.5px solid var(--line);
+  transition: transform 0.25s ease, background 0.25s ease;
+}
+
+.detail-list li:hover {
+  transform: translateY(-3px) rotate(-0.5deg);
+  background: var(--pink-soft);
+}
+
+.detail-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--pink-deep);
+}
+
+.detail-value {
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.55;
+}
+
+.content-spark {
+  position: absolute;
+  right: 22px;
+  bottom: 18px;
+  font-size: 2rem;
+  color: var(--school-color);
+  opacity: 0.3;
+  animation: bob 5s ease-in-out infinite;
+}
+
+/* ============ JOURNEY ============ */
+.journey {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.journey-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.journey-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 2px solid var(--navy);
+  background: var(--white);
+  color: var(--navy);
+  font-family: var(--font-body);
+  font-size: 0.76rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 var(--navy);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.25s ease;
+}
+
+.journey-step:hover {
+  transform: translateY(-3px) rotate(-2deg);
+  background: var(--pink-soft);
+}
+
+.journey-step.active {
+  background: var(--step-color);
+  color: var(--step-on);
+  transform: rotate(-2deg) scale(1.04);
+}
+
+.step-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.65;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(10deg);
+  }
+}
+
+@media (max-width: 760px) {
+  .school-head {
+    align-items: flex-start;
+  }
+
+  .custom-dropdown-wrapper,
+  .custom-dropdown {
+    width: 100%;
+  }
+
+  .detail-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .content-grid {
+    border-left-width: 7px;
+  }
+
+  .content-top {
+    gap: 10px;
+  }
 }
 </style>
