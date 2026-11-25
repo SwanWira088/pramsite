@@ -8,23 +8,7 @@
       </div>
 
       <div class="custom-dropdown-wrapper">
-        <span class="dropdown-label">Pilih Jenjang</span>
-
         <div class="custom-dropdown">
-          <button
-            @click="toggleDropdown"
-            class="dropdown-trigger"
-            :class="{ 'is-active': isOpen }"
-            :style="{ '--current-color': currentSchool.themeColor }"
-            aria-haspopup="listbox"
-            :aria-expanded="isOpen"
-          >
-            <span class="badge" :style="{ backgroundColor: currentSchool.themeColor, color: currentSchool.onColor }">
-              {{ currentSchool.level }}
-            </span>
-            <span class="school-name-text">{{ currentSchool.name }}</span>
-            <span class="chevron-icon" :class="{ rotate: isOpen }">▼</span>
-          </button>
 
           <transition name="slide-fade">
             <ul v-if="isOpen" class="dropdown-menu" role="listbox">

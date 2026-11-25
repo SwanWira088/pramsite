@@ -90,7 +90,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 
-const pklProgress = ref(6.25)
+const pklProgress = ref(8.3)
 const shownProgress = ref(0)
 const poppedTech = ref('')
 let progressTimer = null
